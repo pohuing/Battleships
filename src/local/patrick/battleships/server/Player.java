@@ -2,6 +2,7 @@ package local.patrick.battleships.server;
 
 import local.patrick.battleships.common.Command;
 import local.patrick.battleships.common.InformationCommand;
+import local.patrick.battleships.common.PlayingField;
 import local.patrick.battleships.common.QuitGameCommand;
 
 import java.io.BufferedReader;
@@ -10,9 +11,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 class Player {
     private final Socket socket;
@@ -22,6 +21,7 @@ class Player {
     // Queue for reporting back information to Game object
     private final LinkedBlockingQueue<PlayerCommand> feedbackChannel;
     public final PlayerTag tag;
+    public final PlayingField playingField = new PlayingField();
 
     Player(Socket socket, LinkedBlockingQueue<PlayerCommand> feedbackChannel, PlayerTag tag) {
         this.socket = socket;
