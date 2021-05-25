@@ -2,10 +2,12 @@ package local.patrick.battleships.server;
 
 import local.patrick.battleships.common.GetFieldCommand;
 import local.patrick.battleships.common.PlayingField;
+import local.patrick.battleships.common.QuitGameCommand;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class holds all necessary resources for running a game from start to finish
@@ -16,11 +18,12 @@ public class Game implements Runnable{
             playerTwoField = new PlayingField();
     private final LinkedBlockingQueue<PlayerCommand> playerMessages = new LinkedBlockingQueue<>();
     private final Thread thread;
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
     public Game(Socket socket, Socket socket2) throws IOException {
         System.out.println("Creating match");
-        playerOne = new Player(socket, playerMessages, PlayerTag.One);
-        playerTwo = new Player(socket2, playerMessages, PlayerTag.Two);
+        playerOne = new Player(socket, playerMessages, PlayerTag.One, isRunning);
+        playerTwo = new Player(socket2, playerMessages, PlayerTag.Two, isRunning);
         thread = new Thread(this);
     }
 
@@ -28,7 +31,7 @@ public class Game implements Runnable{
     void processMessages() throws InterruptedException {
         // process playerMessages forever till game finished
         PlayerCommand command;
-        while((command = playerMessages.take()) != null){
+        while((command = playerMessages.take()) != null && isRunning.get()){
             if (command.command instanceof GetFieldCommand){
                 if (command.player == PlayerTag.One){
                     playerOne.outgoingQueue.add(playerOneField.toAllyString());
@@ -37,6 +40,8 @@ public class Game implements Runnable{
                     playerTwo.outgoingQueue.add(playerTwoField.toAllyString());
                     playerTwo.outgoingQueue.add(playerOneField.toOpponentString());
                 }
+            }else if(command.command instanceof QuitGameCommand){
+                isRunning.set(false);
             }
         }
     }
@@ -47,6 +52,7 @@ public class Game implements Runnable{
 
     @Override
     public void run() {
+        isRunning.set(true);
         playerOne.start();
         playerTwo.start();
         try {

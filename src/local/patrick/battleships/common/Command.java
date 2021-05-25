@@ -25,6 +25,8 @@ public abstract class Command {
                 if (params.length == 1){
                     return new GetFieldCommand();
                 }
+            case QuitGameCommand.PREFIX:
+                return new QuitGameCommand();
             default:
                 throw new InstantiationException("Failed to deserialize params: " + Arrays.toString(params) + " Into subclass with appropriate params");
 

@@ -3,6 +3,7 @@ package local.patrick.battleships.client;
 import local.patrick.battleships.common.Command;
 import local.patrick.battleships.common.Constants;
 import local.patrick.battleships.common.GetFieldCommand;
+import local.patrick.battleships.common.QuitGameCommand;
 import local.patrick.battleships.server.PlayerCommand;
 
 import java.io.BufferedReader;
@@ -38,6 +39,7 @@ public class Client {
                         out.println(GetFieldCommand.PREFIX);
                         break;
                     case "q":
+                        out.println(QuitGameCommand.PREFIX);
                         return;
                 }
             }
