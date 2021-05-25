@@ -1,10 +1,11 @@
 package local.patrick.battleships.common;
 
 
+import java.text.ParseException;
 import java.util.Arrays;
 
 public abstract class Command {
-    public static Command deserialize(String line) throws Exception {
+    public static Command deserialize(String line) throws InstantiationException {
         var params = line.split("\\s+");
         switch (params[0]) {
             case PlaceBombCommand.PREFIX:
@@ -25,7 +26,7 @@ public abstract class Command {
                     return new GetFieldCommand();
                 }
             default:
-                throw new Exception("Failed to deserialize params: " + Arrays.toString(params) + " Into subclass with appropriate params");
+                throw new InstantiationException("Failed to deserialize params: " + Arrays.toString(params) + " Into subclass with appropriate params");
 
         }
     }
@@ -52,24 +53,16 @@ class PlaceShipCommand extends Command {
     public enum Orientation {
         LEFT, RIGHT, UP, DOWN;
 
-        public static Orientation deserialize(String raw) throws Exception {
+        public static Orientation deserialize(String raw) throws InstantiationException {
             return switch (raw) {
                 case "LEFT" -> LEFT;
                 case "RIGHT" -> RIGHT;
                 case "UP" -> UP;
                 case "DOWN" -> DOWN;
-                default -> throw new Exception("Shit's fucked ");
+                default -> throw new InstantiationException("Shit's fucked ");
             };
         }
     }
 
 }
 
-class GetFieldCommand extends Command {
-    public final static String PREFIX = "GET_FIELD";
-
-    @Override
-    public String serialize() {
-        return PREFIX;
-    }
-}
