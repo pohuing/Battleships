@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServerGateway implements AutoCloseable {
-    private ServerSocket serverSocket;
-    private List<Game> activeGames = new ArrayList<>();
+    private final ServerSocket serverSocket;
+    private final List<Game> activeGames = new ArrayList<>();
 
     public ServerGateway(Integer port) throws IOException {
         this.serverSocket = new ServerSocket(port);
@@ -18,16 +18,14 @@ public class ServerGateway implements AutoCloseable {
         while (true) {
             var socket = serverSocket.accept();
             var socket2 = serverSocket.accept();
-            var game = new Game(socket);
+            var game = new Game(socket, socket2);
             activeGames.add(game);
-            game.run();
+            game.start();
         }
     }
 
     @Override
     public void close() throws Exception {
-        for (var game : activeGames) {
-            game.close();
-        }
+        serverSocket.close();
     }
 }

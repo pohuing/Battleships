@@ -9,51 +9,36 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * This class holds all necessary resources for running a game from start to finish
  */
-public class Game implements AutoCloseable {
-    private final Socket playerOneSocket, playerTwoSocket;
+public class Game implements Runnable{
+    private final Player playerA, playerB;
     private final PlayingField playerOneField = new PlayingField(),
             playerTwoField = new PlayingField();
+    private final ConcurrentLinkedQueue<PlayerCommand> playerMessages = new ConcurrentLinkedQueue<>();
+    private final Thread thread;
 
     public Game(Socket socket, Socket socket2) throws IOException {
-        this.playerOneSocket = socket;
-        this.playerTwoSocket = socket2;
+        playerA = new Player(socket, playerMessages, PlayerTag.One);
+        playerB = new Player(socket2, playerMessages, PlayerTag.Two);
+        thread = new Thread(this);
     }
 
-    public void run() {
-        try (var in = new BufferedReader(new InputStreamReader(playerOneSocket.getInputStream()));
-             var out = new PrintWriter(playerOneSocket.getOutputStream(), true)) {
+    // Runs through player messages sequentially
+    void processMessages(){
 
-            String inputLine = "";
-            while ((inputLine = in.readLine()) != null) {
-                System.out.println("Got line from Client: " + inputLine);
-                processLine(inputLine);
-                inputLine = "";
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
-    void processLine(String line) {
-        try {
-            var deserialized = Command.deserialize(line);
-            if (deserialized instanceof PlaceBombCommand) {
-                var downcast = ((PlaceBombCommand) deserialized);
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-
-        }
+    public void start(){
+        thread.start();
     }
 
     @Override
-    public void close() throws Exception {
-        playerOneSocket.close();
+    public void run() {
+        playerA.run();
+        playerB.run();
     }
 }

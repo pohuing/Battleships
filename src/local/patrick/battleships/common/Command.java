@@ -17,7 +17,7 @@ public abstract class Command {
                 if (params.length == 4) {
                     var x = Integer.decode(params[1]);
                     var y = Integer.decode(params[2]);
-                    var orientation = PlaceShipCommand.Orientation.deserealize(params[3]);
+                    var orientation = PlaceShipCommand.Orientation.deserialize(params[3]);
                     return new PlaceShipCommand(x, y, orientation);
                 }
             case GetFieldCommand.PREFIX:
@@ -52,7 +52,7 @@ class PlaceShipCommand extends Command {
     public enum Orientation {
         LEFT, RIGHT, UP, DOWN;
 
-        public static Orientation deserealize(String raw) throws Exception {
+        public static Orientation deserialize(String raw) throws Exception {
             return switch (raw) {
                 case "LEFT" -> LEFT;
                 case "RIGHT" -> RIGHT;
