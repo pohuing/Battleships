@@ -1,9 +1,6 @@
 package local.patrick.battleships.server;
 
-import local.patrick.battleships.common.GetFieldCommand;
-import local.patrick.battleships.common.InformationCommand;
-import local.patrick.battleships.common.PlayingField;
-import local.patrick.battleships.common.QuitGameCommand;
+import local.patrick.battleships.common.*;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -48,6 +45,14 @@ public class Game implements Runnable{
                 playerOne.outgoingQueue.add(command.command);
                 playerTwo.outgoingQueue.add(command.command);
                 break;
+            }else if(command.command instanceof PlaceShipCommand){
+                if (command.player == PlayerTag.One){
+                    playerOneField.placeShip((PlaceShipCommand) command.command);
+                    playerOne.outgoingQueue.add(new InformationCommand(playerOneField.toAllyString()));
+                }else if(command.player == PlayerTag.Two){
+                    playerTwoField.placeShip((PlaceShipCommand) command.command);
+                    playerTwo.outgoingQueue.add(new InformationCommand(playerTwoField.toAllyString()));
+                }
             }
         }
     }

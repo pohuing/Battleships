@@ -3,6 +3,8 @@ package local.patrick.battleships.common;
 
 import java.util.Arrays;
 
+import static local.patrick.battleships.common.Constants.*;
+
 public abstract class Command {
     //public final static String SEPARATOR = "ヾ\\(｡>﹏<｡\\)ﾉﾞ✧*";
     public final static String SEPARATOR = ";";
@@ -17,11 +19,12 @@ public abstract class Command {
                     return new PlaceBombCommand(x, y);
                 }
             case PlaceShipCommand.PREFIX:
-                if (params.length == 4) {
+                if (params.length == 5) {
                     var x = Integer.decode(params[1]);
                     var y = Integer.decode(params[2]);
                     var orientation = PlaceShipCommand.Orientation.deserialize(params[3]);
-                    return new PlaceShipCommand(x, y, orientation);
+                    var type = PlaceShipCommand.Type.deserialize(params[4]);
+                    return new PlaceShipCommand(x, y, orientation, type);
                 }
             case GetFieldCommand.PREFIX:
                 if (params.length == 1) {
@@ -40,37 +43,5 @@ public abstract class Command {
     }
 
     public abstract String serialize();
-}
-
-class PlaceShipCommand extends Command {
-    public final static String PREFIX = "PLACE_SHIP";
-    public final Integer x, y;
-    public final Orientation orientation;
-
-    public PlaceShipCommand(Integer x, Integer y, Orientation orientation) {
-        this.x = x;
-        this.y = y;
-        this.orientation = orientation;
-    }
-
-    @Override
-    public String serialize() {
-        return PREFIX + SEPARATOR + x + SEPARATOR + y + SEPARATOR + orientation;
-    }
-
-    public enum Orientation {
-        LEFT, RIGHT, UP, DOWN;
-
-        public static Orientation deserialize(String raw) throws InstantiationException {
-            return switch (raw) {
-                case "LEFT" -> LEFT;
-                case "RIGHT" -> RIGHT;
-                case "UP" -> UP;
-                case "DOWN" -> DOWN;
-                default -> throw new InstantiationException("Shit's fucked ");
-            };
-        }
-    }
-
 }
 
