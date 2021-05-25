@@ -7,23 +7,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
 public class Client {
     private final String targetAddress;
-    private Thread listeningThread;
+    private final int targetPort;
     private Socket socket;
 
 
-    public Client(String targetAddress) {
+    public Client(String targetAddress, int targetPort) {
         this.targetAddress = targetAddress;
+        this.targetPort = targetPort;
     }
 
     public void run() throws IOException {
-        socket = new Socket("localhost", Constants.PORT);
-        listeningThread = new Thread(this::listen);
+        socket = new Socket(targetAddress, targetPort);
+        Thread listeningThread = new Thread(this::listen);
         listeningThread.start();
 
 
@@ -88,9 +88,7 @@ public class Client {
             }catch(NumberFormatException ignored){
             }
         }
-
         return new PlaceShipCommand(column, row, orientation, type);
-
     }
 
     private void listen() {

@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class ServerMain {
     public static void main(String[] args) throws IOException {
-        var gateway = new ServerGateway(Constants.PORT);
+        var gateway = new ServerGateway(Constants.DEFAULT_PORT);
         gateway.run();
     }
 }
