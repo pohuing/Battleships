@@ -8,9 +8,12 @@ public class InformationCommand extends Command{
         this.message = message;
     }
 
+    private String escapeMessage(){
+        return message.replace("\n", "\\n");
+    }
 
     @Override
     public String serialize() {
-        return PREFIX + SEPARATOR + message;
+        return PREFIX + SEPARATOR + escapeMessage();
     }
 }

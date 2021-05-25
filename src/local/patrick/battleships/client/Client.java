@@ -1,9 +1,6 @@
 package local.patrick.battleships.client;
 
-import local.patrick.battleships.common.Command;
-import local.patrick.battleships.common.Constants;
-import local.patrick.battleships.common.GetFieldCommand;
-import local.patrick.battleships.common.QuitGameCommand;
+import local.patrick.battleships.common.*;
 import local.patrick.battleships.server.PlayerCommand;
 
 import java.io.BufferedReader;
@@ -51,11 +48,21 @@ public class Client {
             var inputLine = "";
             while ((inputLine = in.readLine()) != null) {
                 System.out.println(inputLine);
+                try {
+                    var deserialized = Command.deserialize(inputLine);
+                    if (deserialized instanceof InformationCommand) {
+                        System.out.println(((InformationCommand)deserialized).message);
+                    }if (deserialized instanceof QuitGameCommand){
+                        System.out.println("The other player quit");
+                        return;
+                    }
+                }catch (InstantiationException e){
+                    System.out.println("Got unparseable message from server: " + inputLine);
+                }
             }
         } catch (IOException e) {
             System.out.println("Disconnected from Server");
-        }
-        System.out.println("Client listen exiting nominally");
+        }         System.out.println("Client listen exiting nominally");
         System.out.println("Enter q to quit");
     }
 }

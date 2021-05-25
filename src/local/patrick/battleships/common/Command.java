@@ -1,11 +1,12 @@
 package local.patrick.battleships.common;
 
 
-import java.text.ParseException;
 import java.util.Arrays;
 
 public abstract class Command {
-    public final static String SEPARATOR = "ヾ\\(｡>﹏<｡\\)ﾉﾞ✧*";
+    //public final static String SEPARATOR = "ヾ\\(｡>﹏<｡\\)ﾉﾞ✧*";
+    public final static String SEPARATOR = ";";
+
     public static Command deserialize(String line) throws InstantiationException {
         var params = line.split(SEPARATOR);
         switch (params[0]) {
@@ -23,12 +24,12 @@ public abstract class Command {
                     return new PlaceShipCommand(x, y, orientation);
                 }
             case GetFieldCommand.PREFIX:
-                if (params.length == 1){
+                if (params.length == 1) {
                     return new GetFieldCommand();
                 }
             case InformationCommand.PREFIX:
-                if (params.length == 2){
-                    return new InformationCommand(params[1]);
+                if (params.length == 2) {
+                    return new InformationCommand(params[1].replace("\\n", "\n"));
                 }
             case QuitGameCommand.PREFIX:
                 return new QuitGameCommand();
@@ -43,7 +44,7 @@ public abstract class Command {
 
 class PlaceShipCommand extends Command {
     public final static String PREFIX = "PLACE_SHIP";
-    public final Integer x,y;
+    public final Integer x, y;
     public final Orientation orientation;
 
     public PlaceShipCommand(Integer x, Integer y, Orientation orientation) {
