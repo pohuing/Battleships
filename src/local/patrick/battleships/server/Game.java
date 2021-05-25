@@ -1,6 +1,7 @@
 package local.patrick.battleships.server;
 
 import local.patrick.battleships.common.GetFieldCommand;
+import local.patrick.battleships.common.InformationCommand;
 import local.patrick.battleships.common.PlayingField;
 import local.patrick.battleships.common.QuitGameCommand;
 
@@ -18,12 +19,11 @@ public class Game implements Runnable{
             playerTwoField = new PlayingField();
     private final LinkedBlockingQueue<PlayerCommand> playerMessages = new LinkedBlockingQueue<>();
     private final Thread thread;
-    private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
     public Game(Socket socket, Socket socket2) throws IOException {
         System.out.println("Creating match");
-        playerOne = new Player(socket, playerMessages, PlayerTag.One, isRunning);
-        playerTwo = new Player(socket2, playerMessages, PlayerTag.Two, isRunning);
+        playerOne = new Player(socket, playerMessages, PlayerTag.One);
+        playerTwo = new Player(socket2, playerMessages, PlayerTag.Two);
         thread = new Thread(this);
     }
 
@@ -31,17 +31,23 @@ public class Game implements Runnable{
     void processMessages() throws InterruptedException {
         // process playerMessages forever till game finished
         PlayerCommand command;
-        while((command = playerMessages.take()) != null && isRunning.get()){
+        while((command = playerMessages.take()) != null){
             if (command.command instanceof GetFieldCommand){
                 if (command.player == PlayerTag.One){
-                    playerOne.outgoingQueue.add(playerOneField.toAllyString());
-                    playerOne.outgoingQueue.add(playerTwoField.toOpponentString());
+                    playerOne.outgoingQueue.add(
+                            new InformationCommand(playerOneField.toAllyString()));
+                    playerOne.outgoingQueue.add(
+                            new InformationCommand(playerTwoField.toOpponentString()));
                 }else if(command.player == PlayerTag.Two){
-                    playerTwo.outgoingQueue.add(playerTwoField.toAllyString());
-                    playerTwo.outgoingQueue.add(playerOneField.toOpponentString());
+                    playerTwo.outgoingQueue.add(
+                            new InformationCommand(playerTwoField.toAllyString()));
+                    playerTwo.outgoingQueue.add(
+                            new InformationCommand(playerOneField.toOpponentString()));
                 }
             }else if(command.command instanceof QuitGameCommand){
-                isRunning.set(false);
+                playerOne.outgoingQueue.add(command.command);
+                playerTwo.outgoingQueue.add(command.command);
+                break;
             }
         }
     }
@@ -52,7 +58,6 @@ public class Game implements Runnable{
 
     @Override
     public void run() {
-        isRunning.set(true);
         playerOne.start();
         playerTwo.start();
         try {
@@ -60,5 +65,6 @@ public class Game implements Runnable{
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        System.out.println("Ending game thread");
     }
 }

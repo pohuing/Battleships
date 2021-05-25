@@ -5,8 +5,9 @@ import java.text.ParseException;
 import java.util.Arrays;
 
 public abstract class Command {
+    public final static String SEPARATOR = "ヾ\\(｡>﹏<｡\\)ﾉﾞ✧*";
     public static Command deserialize(String line) throws InstantiationException {
-        var params = line.split("\\s+");
+        var params = line.split(SEPARATOR);
         switch (params[0]) {
             case PlaceBombCommand.PREFIX:
                 if (params.length == 3) {
@@ -24,6 +25,10 @@ public abstract class Command {
             case GetFieldCommand.PREFIX:
                 if (params.length == 1){
                     return new GetFieldCommand();
+                }
+            case InformationCommand.PREFIX:
+                if (params.length == 2){
+                    return new InformationCommand(params[1]);
                 }
             case QuitGameCommand.PREFIX:
                 return new QuitGameCommand();
@@ -49,7 +54,7 @@ class PlaceShipCommand extends Command {
 
     @Override
     public String serialize() {
-        return String.format("%s %d %d %s", PREFIX, x, y, orientation);
+        return PREFIX + SEPARATOR + x + SEPARATOR + y + SEPARATOR + orientation;
     }
 
     public enum Orientation {

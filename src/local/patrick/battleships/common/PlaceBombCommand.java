@@ -11,6 +11,6 @@ public class PlaceBombCommand extends Command {
 
     @Override
     public String serialize() {
-        return String.format("%s %d %d", PREFIX, x, y);
+        return PREFIX + SEPARATOR + x + SEPARATOR + y;
     }
 }

@@ -52,9 +52,10 @@ public class Client {
             while ((inputLine = in.readLine()) != null) {
                 System.out.println(inputLine);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Disconnected from Server");
         }
         System.out.println("Client listen exiting nominally");
+        System.out.println("Enter q to quit");
     }
 }
