@@ -47,7 +47,11 @@ public class Game implements Runnable {
                 if (gamePhase != GamePhase.PREPARATION) {
                     player.outgoingQueue.add(new InformationCommand("This can only be done during the preparation phase"));
                 }
-                player.playingField.placeShip((PlaceShipCommand) command.command);
+                try {
+                    player.playingField.placeShip((PlaceShipCommand) command.command);
+                } catch (IllegalStateException | IndexOutOfBoundsException | TooManyShipsException e) {
+                    player.outgoingQueue.add(new InformationCommand(e.getMessage()));
+                }
                 player.outgoingQueue.add(new InformationCommand(player.playingField.toAllyString()));
             }
         }

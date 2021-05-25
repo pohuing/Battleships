@@ -17,13 +17,20 @@ public class PlaceShipCommand extends Command {
         this.type = type;
     }
 
+
     @Override
     public String serialize() {
         return PREFIX + SEPARATOR + column + SEPARATOR + row + SEPARATOR + orientation + SEPARATOR + type;
     }
 
     public enum Orientation {
-        LEFT, RIGHT, UP, DOWN;
+        LEFT(-1, 0), RIGHT(1, 0), UP(0, -1), DOWN(0, 1);
+        public final int columnVector, rowVector;
+
+        Orientation(int columnVector, int rowVector) {
+            this.columnVector = columnVector;
+            this.rowVector = rowVector;
+        }
 
         public static Orientation deserialize(String raw) throws InstantiationException {
             return switch (raw) {

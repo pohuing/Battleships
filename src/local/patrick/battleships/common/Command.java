@@ -3,8 +3,6 @@ package local.patrick.battleships.common;
 
 import java.util.Arrays;
 
-import static local.patrick.battleships.common.Constants.*;
-
 public abstract class Command {
     //public final static String SEPARATOR = "ヾ\\(｡>﹏<｡\\)ﾉﾞ✧*";
     public final static String SEPARATOR = ";";

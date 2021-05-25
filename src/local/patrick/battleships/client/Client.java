@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Arrays;
-import java.util.List;
+
+import static local.patrick.battleships.common.Constants.rowToInt;
 
 public class Client {
     private final String targetAddress;
@@ -71,13 +71,14 @@ public class Client {
                 default -> null;
             };
         }
+
         input = "";
-        List<String> allowedRows = Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I", "J");
         int row = -1;
-        while ((row = allowedRows.indexOf(input)) <= -1) {
+        while ((row = rowToInt(input)) <= -1) {
             System.out.println("Enter Row A - J");
             input = stdin.readLine();
         }
+
         input = "";
         int column = -1;
         while (column <= -1){
