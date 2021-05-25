@@ -17,7 +17,9 @@ public class ServerGateway implements AutoCloseable {
     public void run() throws IOException {
         while (true) {
             var socket = serverSocket.accept();
+            System.out.println("Got a first client");
             var socket2 = serverSocket.accept();
+            System.out.println("Got a second client, creating new game");
             var game = new Game(socket, socket2);
             activeGames.add(game);
             game.start();

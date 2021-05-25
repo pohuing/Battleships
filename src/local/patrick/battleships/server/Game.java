@@ -1,13 +1,8 @@
 package local.patrick.battleships.server;
 
-import local.patrick.battleships.common.Command;
-import local.patrick.battleships.common.PlaceBombCommand;
 import local.patrick.battleships.common.PlayingField;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -22,6 +17,7 @@ public class Game implements Runnable{
     private final Thread thread;
 
     public Game(Socket socket, Socket socket2) throws IOException {
+        System.out.println("Creating match");
         playerA = new Player(socket, playerMessages, PlayerTag.One);
         playerB = new Player(socket2, playerMessages, PlayerTag.Two);
         thread = new Thread(this);
@@ -38,7 +34,7 @@ public class Game implements Runnable{
 
     @Override
     public void run() {
-        playerA.run();
-        playerB.run();
+        playerA.start();
+        playerB.start();
     }
 }

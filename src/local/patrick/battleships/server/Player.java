@@ -22,33 +22,49 @@ class Player {
         this.socket = socket;
         this.feedbackChannel = feedbackChannel;
         this.tag = tag;
+
         sendingThread = new Thread(this::send);
         receivingThread = new Thread(this::listen);
     }
 
-    void run(){
+    void start(){
+        System.out.println(tag + "Starting communication threads");
+        System.out.println("Socket closed?:" + socket.isClosed());
+
         sendingThread.start();
         receivingThread.start();
     }
 
     void listen() {
+        System.out.println(tag + ": in listen, socket closed?: " + socket.isClosed());
         try (var in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             var inputLine = "";
-            while ((inputLine = in.readLine()) != null) {
-                System.out.println("Got message from Player " + tag + ": " + inputLine);
-                feedbackChannel.add(new PlayerCommand(tag, Command.deserialize(inputLine)));
+            while(!socket.isClosed()) {
+                // TODO fix busy poll
+                while ((inputLine = in.readLine()) != null) {
+                    System.out.println("Got message from Player " + tag + ": " + inputLine);
+                    feedbackChannel.add(new PlayerCommand(tag, Command.deserialize(inputLine)));
+                }
             }
-        } catch (Exception e) {
+        } catch (IOException | InstantiationException e) {
             e.printStackTrace();
         }
     }
 
     void send() {
+        System.out.println(tag + ": in send, socket closed?: " + socket.isClosed());
+        outgoingQueue.add("Hello World from Server");
         try (var out = new PrintWriter(socket.getOutputStream())) {
-            for (var message : outgoingQueue) {
-                out.println(message);
-                System.out.println("Sent message to Player " + tag + ": " + message);
+            while(!socket.isClosed()){
+                var outline = outgoingQueue.poll();
+                if (outline == null)
+                    continue; // TODO fix busy poll
+                for (var message : outgoingQueue) {
+                    out.println(message);
+                    System.out.println("Sent message to Player " + tag + ": " + message);
+                }
             }
+            System.out.println(tag + " send thread has terminated nominally");
         } catch (IOException e) {
             e.printStackTrace();
         }
