@@ -1,31 +1,44 @@
 package local.patrick.battleships.server;
 
+import local.patrick.battleships.common.GetFieldCommand;
 import local.patrick.battleships.common.PlayingField;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * This class holds all necessary resources for running a game from start to finish
  */
 public class Game implements Runnable{
-    private final Player playerA, playerB;
+    private final Player playerOne, playerTwo;
     private final PlayingField playerOneField = new PlayingField(),
             playerTwoField = new PlayingField();
-    private final ConcurrentLinkedQueue<PlayerCommand> playerMessages = new ConcurrentLinkedQueue<>();
+    private final LinkedBlockingQueue<PlayerCommand> playerMessages = new LinkedBlockingQueue<>();
     private final Thread thread;
 
     public Game(Socket socket, Socket socket2) throws IOException {
         System.out.println("Creating match");
-        playerA = new Player(socket, playerMessages, PlayerTag.One);
-        playerB = new Player(socket2, playerMessages, PlayerTag.Two);
+        playerOne = new Player(socket, playerMessages, PlayerTag.One);
+        playerTwo = new Player(socket2, playerMessages, PlayerTag.Two);
         thread = new Thread(this);
     }
 
     // Runs through player messages sequentially
-    void processMessages(){
-
+    void processMessages() throws InterruptedException {
+        // process playerMessages forever till game finished
+        PlayerCommand command;
+        while((command = playerMessages.take()) != null){
+            if (command.command instanceof GetFieldCommand){
+                if (command.player == PlayerTag.One){
+                    playerOne.outgoingQueue.add(playerOneField.toAllyString());
+                    playerOne.outgoingQueue.add(playerTwoField.toOpponentString());
+                }else if(command.player == PlayerTag.Two){
+                    playerTwo.outgoingQueue.add(playerTwoField.toAllyString());
+                    playerTwo.outgoingQueue.add(playerOneField.toOpponentString());
+                }
+            }
+        }
     }
 
     public void start(){
@@ -34,7 +47,12 @@ public class Game implements Runnable{
 
     @Override
     public void run() {
-        playerA.start();
-        playerB.start();
+        playerOne.start();
+        playerTwo.start();
+        try {
+            processMessages();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.text.ParseException;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 class Player {
     private final Socket socket;
@@ -15,10 +17,10 @@ class Player {
     // A buffer for writing things to the respective client
     public final ConcurrentLinkedQueue<String> outgoingQueue = new ConcurrentLinkedQueue<>();
     // Queue for reporting back information to Game object
-    private final ConcurrentLinkedQueue<PlayerCommand> feedbackChannel;
+    private final LinkedBlockingQueue<PlayerCommand> feedbackChannel;
     public final PlayerTag tag;
 
-    Player(Socket socket, ConcurrentLinkedQueue<PlayerCommand> feedbackChannel, PlayerTag tag) {
+    Player(Socket socket, LinkedBlockingQueue<PlayerCommand> feedbackChannel, PlayerTag tag) {
         this.socket = socket;
         this.feedbackChannel = feedbackChannel;
         this.tag = tag;
@@ -28,8 +30,8 @@ class Player {
     }
 
     void start(){
-        System.out.println(tag + "Starting communication threads");
-        System.out.println("Socket closed?:" + socket.isClosed());
+        System.out.println(tag + ": Starting communication threads");
+        System.out.println(tag + ": Socket closed?:" + socket.isClosed());
 
         sendingThread.start();
         receivingThread.start();
@@ -53,16 +55,15 @@ class Player {
 
     void send() {
         System.out.println(tag + ": in send, socket closed?: " + socket.isClosed());
-        outgoingQueue.add("Hello World from Server");
-        try (var out = new PrintWriter(socket.getOutputStream())) {
+        outgoingQueue.add("Hello World to " + tag);
+        try (var out = new PrintWriter(socket.getOutputStream(), true)) {
             while(!socket.isClosed()){
                 var outline = outgoingQueue.poll();
                 if (outline == null)
                     continue; // TODO fix busy poll
-                for (var message : outgoingQueue) {
-                    out.println(message);
-                    System.out.println("Sent message to Player " + tag + ": " + message);
-                }
+                out.println(outline);
+                System.out.println("Sent message to Player " + tag + ": " + outline);
+
             }
             System.out.println(tag + " send thread has terminated nominally");
         } catch (IOException e) {
