@@ -14,6 +14,7 @@ public class Game implements Runnable {
     private final LinkedBlockingQueue<PlayerCommand> playerMessages = new LinkedBlockingQueue<>();
     private final Thread thread;
     private GamePhase gamePhase = GamePhase.PREPARATION;
+    private Player activePlayer = null;
 
     public Game(Socket socket, Socket socket2) throws IOException {
         System.out.println("Creating match");
@@ -46,6 +47,7 @@ public class Game implements Runnable {
             } else if (command.command instanceof PlaceShipCommand) {
                 if (gamePhase != GamePhase.PREPARATION) {
                     player.outgoingQueue.add(new InformationCommand("This can only be done during the preparation phase"));
+                    continue;
                 }
                 try {
                     player.playingField.placeShip((PlaceShipCommand) command.command);
@@ -53,6 +55,30 @@ public class Game implements Runnable {
                     player.outgoingQueue.add(new InformationCommand(e.getMessage()));
                 }
                 player.outgoingQueue.add(new InformationCommand(player.playingField.toAllyString()));
+
+                if (player.playingField.isComplete() && opponent.playingField.isComplete()){
+                    System.out.println("Game has switched to Battle phase");
+                    gamePhase = GamePhase.BATTLE;
+                    activePlayer = opponent;
+                    player.outgoingQueue.add(new InformationCommand("Both players have finished preparation, battle begins!"));
+                    opponent.outgoingQueue.add(new InformationCommand("Both players have finished preparation, battle begins!"));
+                    player.outgoingQueue.add(new InformationCommand("It is the opponent's turn to shoot"));
+                    opponent.outgoingQueue.add(new InformationCommand("It is your turn to shoot"));
+                }
+            }else if(command.command instanceof PlaceBombCommand){
+                if (activePlayer.tag == command.player){
+                    try {
+                        var result = opponent.playingField.fireOnSpot((PlaceBombCommand) command.command);
+                        player.outgoingQueue.add(new InformationCommand(result.toString()));
+                        player.outgoingQueue.add(new InformationCommand(opponent.playingField.toOpponentString()));
+                        opponent.outgoingQueue.add(new InformationCommand(opponent.playingField.toAllyString()));
+                        activePlayer = opponent;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }else{
+                    player.outgoingQueue.add(new InformationCommand("It is not your turn to fire"));
+                }
             }
         }
     }

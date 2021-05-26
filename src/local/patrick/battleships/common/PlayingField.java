@@ -2,7 +2,7 @@ package local.patrick.battleships.common;
 
 import java.util.HashMap;
 
-import static local.patrick.battleships.common.Constants.intToRow;
+import static local.patrick.battleships.common.Constants.*;
 
 public class PlayingField {
     // [column][row]
@@ -24,7 +24,6 @@ public class PlayingField {
     }
 
     public void placeShip(PlaceShipCommand command) throws IllegalStateException, TooManyShipsException, IndexOutOfBoundsException {
-        // TODO build collision avoidance logic
         var maxship = switch (command.type) {
             case Carrier -> Constants.MAX_CARRIERS;
             case Battleship -> Constants.MAX_BATTLESHIPS;
@@ -53,9 +52,42 @@ public class PlayingField {
         shipcount.put(command.type, oldCount + 1);
     }
 
+    /**
+     * Fires a shot at the spot in command and returns the new state of the spot
+     * @param command
+     * @return
+     * @throws IndexOutOfBoundsException
+     */
+    public Spot fireOnSpot(PlaceBombCommand command) throws Exception {
+        if(!isSpotInField(command.column, command.row))
+            throw new IndexOutOfBoundsException("This spot is not in the playing field");
+
+        switch (field.get(command.column).get(command.row)) {
+            case EMPTY -> {
+                field.get(command.column).put(command.row, Spot.MISS);
+                return Spot.MISS;
+            }
+            case SHIP -> {
+                field.get(command.column).put(command.row, Spot.HIT);
+                return Spot.HIT;
+            }
+            case MISS -> {
+                return Spot.MISS;
+            }
+            case HIT -> {
+                return Spot.HIT;
+            }
+        }
+        throw new Exception("This section shouldn't be reachable");
+    }
+
+    public Boolean isComplete() {
+        return shipcount.values().stream().mapToInt(i -> i).sum() == MAX_BATTLESHIPS + MAX_CARRIERS + MAX_DESTROYERS + MAX_SUBMARINES;
+    }
+
     private boolean isCommandInField(PlaceShipCommand command) {
         // Are base coordinates in playing field
-        if (command.column < 0 || command.row < 0 || command.column > Constants.MAX_COLUMNS || command.row > Constants.MAX_ROWS)
+        if (!isSpotInField(command.column, command.row))
             return false;
 
         // Where is the farthest away from base segment of ship
@@ -66,21 +98,26 @@ public class PlayingField {
         if (greatestColumnExtent < 0 || greatestColumnExtent > Constants.MAX_COLUMNS) {
             return false;
         }
-        if (greatestRowExtent < 0 || greatestRowExtent > Constants.MAX_ROWS) {
-            return false;
-        }
+        return greatestRowExtent >= 0 && greatestRowExtent <= Constants.MAX_ROWS;
+    }
 
-        return true;
+    private boolean isSpotInField(int column, int row) {
+        return column < MAX_COLUMNS && column >= 0 &&
+                row < MAX_ROWS && row >= 0;
     }
 
     private boolean isSpaceAvailable(PlaceShipCommand command) {
         var curColumn = command.column;
         var curRow = command.row;
         for (int i = 0; i < command.type.size; i++) {
-            if (field.get(curColumn).get(curRow) == Spot.SHIP)
+            try {
+                if (field.get(curColumn).get(curRow) == Spot.SHIP)
+                    return false;
+                curColumn += command.orientation.columnVector;
+                curRow += command.orientation.rowVector;
+            } catch (NullPointerException e) {
                 return false;
-            curColumn += command.orientation.columnVector;
-            curRow += command.orientation.rowVector;
+            }
         }
         return true;
     }
@@ -92,7 +129,7 @@ public class PlayingField {
         temp.append("Carriers: ").append(shipcount.get(PlaceShipCommand.Type.Carrier))
                 .append(" Battleships: ").append(shipcount.get(PlaceShipCommand.Type.Battleship))
                 .append(" Destroyers: ").append(shipcount.get(PlaceShipCommand.Type.Destroyer))
-                .append(" Submarines: ").append(shipcount.get(PlaceShipCommand.Type.Destroyer))
+                .append(" Submarines: ").append(shipcount.get(PlaceShipCommand.Type.Submarine))
                 .append("\n");
 
         temp.append("XX");
@@ -125,7 +162,7 @@ public class PlayingField {
         temp.append("Carriers: ").append(shipcount.get(PlaceShipCommand.Type.Carrier))
                 .append(" Battleships: ").append(shipcount.get(PlaceShipCommand.Type.Battleship))
                 .append(" Destroyers: ").append(shipcount.get(PlaceShipCommand.Type.Destroyer))
-                .append(" Submarines: ").append(shipcount.get(PlaceShipCommand.Type.Destroyer))
+                .append(" Submarines: ").append(shipcount.get(PlaceShipCommand.Type.Submarine))
                 .append("\n");
 
         temp.append("XX");

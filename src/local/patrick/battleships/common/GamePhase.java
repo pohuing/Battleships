@@ -1,5 +1,5 @@
 package local.patrick.battleships.common;
 
 public enum GamePhase {
-    PREPARATION, PLAYING;
+    PREPARATION, BATTLE
 }

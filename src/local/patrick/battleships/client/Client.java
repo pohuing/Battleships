@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import static local.patrick.battleships.common.Constants.rowToInt;
+import static local.patrick.battleships.common.Constants.*;
 
 public class Client {
     private final String targetAddress;
@@ -29,21 +29,24 @@ public class Client {
 
         try (var out = new PrintWriter(socket.getOutputStream(), true)) {
             var inLine = "";
-            var buffread = new BufferedReader(new InputStreamReader(System.in));
+            var stdin = new BufferedReader(new InputStreamReader(System.in));
             while (true) {
                 System.out.println("? for current playing fields, q to quit game, CDSB for Carrier Destroyer Submarine Battleship");
-                inLine = buffread.readLine();
+                inLine = stdin.readLine();
                 switch (inLine) {
-                    case "?":
-                        out.println(GetFieldCommand.PREFIX);
-                        break;
-                    case "C", "D", "S", "B":
-                        var command = createShipCommand(inLine, buffread);
+                    case "?" -> out.println(GetFieldCommand.PREFIX);
+                    case "C", "D", "S", "B" -> {
+                        var command = createShipCommand(inLine, stdin);
                         out.println(command.serialize());
-                        break;
-                    case "q":
+                    }
+                    case "F" -> {
+                        var command = shootAt(stdin);
+                        out.println(command.serialize());
+                    }
+                    case "q" -> {
                         out.println(QuitGameCommand.PREFIX);
                         return;
+                    }
                 }
             }
         }
@@ -72,24 +75,39 @@ public class Client {
             };
         }
 
-        input = "";
-        int row = -1;
-        while ((row = rowToInt(input)) <= -1) {
+        int row = getRow(stdin);
+        int column = getColumn(stdin);
+        return new PlaceShipCommand(column, row, orientation, type);
+    }
+
+    private PlaceBombCommand shootAt(BufferedReader stdin) throws IOException {
+        var row = getRow(stdin);
+        var column = getColumn(stdin);
+        return new PlaceBombCommand(column, row);
+    }
+
+    private int getColumn(BufferedReader stdin) throws IOException {
+        String input;
+        int column = -1;
+        while (column <= -1 || column > MAX_COLUMNS) {
+            System.out.println("Enter column 0-" + (MAX_COLUMNS - 1));
+            input = stdin.readLine();
+            try {
+                column = Integer.parseInt(input);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return column;
+    }
+
+    private int getRow(BufferedReader stdin) throws IOException {
+        String input = "";
+        int row;
+        while ((row = rowToInt(input)) <= -1 || row > MAX_ROWS) {
             System.out.println("Enter Row A - J");
             input = stdin.readLine();
         }
-
-        input = "";
-        int column = -1;
-        while (column <= -1){
-            System.out.println("Enter column 0-9");
-            input = stdin.readLine();
-            try{
-                column = Integer.parseInt(input);
-            }catch(NumberFormatException ignored){
-            }
-        }
-        return new PlaceShipCommand(column, row, orientation, type);
+        return row;
     }
 
     private void listen() {
