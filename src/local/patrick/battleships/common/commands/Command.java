@@ -1,8 +1,11 @@
-package local.patrick.battleships.common;
+package local.patrick.battleships.common.commands;
 
 
 import java.util.Arrays;
 
+/**
+ *
+ */
 public abstract class Command {
     //public final static String SEPARATOR = "ヾ\\(｡>﹏<｡\\)ﾉﾞ✧*";
     public final static String SEPARATOR = ";";
@@ -10,11 +13,11 @@ public abstract class Command {
     public static Command deserialize(String line) throws InstantiationException {
         var params = line.split(SEPARATOR);
         switch (params[0]) {
-            case PlaceBombCommand.PREFIX:
+            case FireAtCommand.PREFIX:
                 if (params.length == 3) {
                     var x = Integer.decode(params[1]);
                     var y = Integer.decode(params[2]);
-                    return new PlaceBombCommand(x, y);
+                    return new FireAtCommand(x, y);
                 }
             case PlaceShipCommand.PREFIX:
                 if (params.length == 5) {

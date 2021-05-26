@@ -1,10 +1,10 @@
-package local.patrick.battleships.common;
+package local.patrick.battleships.common.commands;
 
-public class PlaceBombCommand extends Command {
+public class FireAtCommand extends Command {
     public final static String PREFIX = "PLACE_BOMB";
     public final Integer column, row;
 
-    public PlaceBombCommand(Integer column, Integer row) {
+    public FireAtCommand(Integer column, Integer row) {
         this.column = column;
         this.row = row;
     }

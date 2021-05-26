@@ -1,6 +1,6 @@
 package local.patrick.battleships.server;
 
-import local.patrick.battleships.common.Command;
+import local.patrick.battleships.common.commands.Command;
 
 public class PlayerCommand {
     public final PlayerTag player;

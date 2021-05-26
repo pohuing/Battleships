@@ -1,4 +1,4 @@
-package local.patrick.battleships.common;
+package local.patrick.battleships.common.commands;
 
 import java.util.Locale;
 

@@ -1,4 +1,4 @@
-package local.patrick.battleships.common;
+package local.patrick.battleships.common.commands;
 
 public class QuitGameCommand extends Command {
     public final static String PREFIX = "QUIT_GAME";

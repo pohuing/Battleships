@@ -1,6 +1,7 @@
 package local.patrick.battleships.server;
 
-import local.patrick.battleships.common.*;
+import local.patrick.battleships.common.TooManyShipsException;
+import local.patrick.battleships.common.commands.*;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -18,6 +19,8 @@ public class Game implements Runnable {
 
     public Game(Socket socket, Socket socket2) throws IOException {
         System.out.println("Creating match");
+        socket.setKeepAlive(true);
+        socket2.setKeepAlive(true);
         playerOne = new Player(socket, playerMessages, PlayerTag.One);
         playerTwo = new Player(socket2, playerMessages, PlayerTag.Two);
         thread = new Thread(this);
@@ -56,7 +59,7 @@ public class Game implements Runnable {
                 }
                 player.outgoingQueue.add(new InformationCommand(player.playingField.toAllyString()));
 
-                if (player.playingField.isComplete() && opponent.playingField.isComplete()){
+                if (player.playingField.isComplete() && opponent.playingField.isComplete()) {
                     System.out.println("Game has switched to Battle phase");
                     gamePhase = GamePhase.BATTLE;
                     activePlayer = opponent;
@@ -65,18 +68,35 @@ public class Game implements Runnable {
                     player.outgoingQueue.add(new InformationCommand("It is the opponent's turn to shoot"));
                     opponent.outgoingQueue.add(new InformationCommand("It is your turn to shoot"));
                 }
-            }else if(command.command instanceof PlaceBombCommand){
-                if (activePlayer.tag == command.player){
+            } else if (command.command instanceof FireAtCommand) {
+                // Discord invalid input
+                if (gamePhase != GamePhase.BATTLE) {
+                    player.outgoingQueue.add(new InformationCommand("This can only be done during the battle phase"));
+                    continue;
+                }
+
+                if (activePlayer.tag == command.player) {
                     try {
-                        var result = opponent.playingField.fireOnSpot((PlaceBombCommand) command.command);
+                        var result = opponent.playingField.fireOnSpot((FireAtCommand) command.command);
                         player.outgoingQueue.add(new InformationCommand(result.toString()));
                         player.outgoingQueue.add(new InformationCommand(opponent.playingField.toOpponentString()));
+                        opponent.outgoingQueue.add(new InformationCommand(result.toString()));
                         opponent.outgoingQueue.add(new InformationCommand(opponent.playingField.toAllyString()));
+
+                        // Did this sink the final ship?
+                        // Transition into post battle phase
+                        if (opponent.playingField.hasLost()) {
+                            gamePhase = GamePhase.FINISHED;
+                            player.outgoingQueue.add(new InformationCommand("You have hit the final ship, you've won!"));
+                            opponent.outgoingQueue.add(new InformationCommand("Your final ship has been sunk, you've lost!"));
+                        }
                         activePlayer = opponent;
-                    } catch (Exception e) {
+                    } catch (IndexOutOfBoundsException e) {
+                        player.outgoingQueue.add(new InformationCommand(e.getMessage()));
+                    } catch (UnknownError e) {
                         e.printStackTrace();
                     }
-                }else{
+                } else {
                     player.outgoingQueue.add(new InformationCommand("It is not your turn to fire"));
                 }
             }

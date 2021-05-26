@@ -1,6 +1,6 @@
 package local.patrick.battleships.client;
 
-import local.patrick.battleships.common.*;
+import local.patrick.battleships.common.commands.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -80,10 +80,10 @@ public class Client {
         return new PlaceShipCommand(column, row, orientation, type);
     }
 
-    private PlaceBombCommand shootAt(BufferedReader stdin) throws IOException {
+    private FireAtCommand shootAt(BufferedReader stdin) throws IOException {
         var row = getRow(stdin);
         var column = getColumn(stdin);
-        return new PlaceBombCommand(column, row);
+        return new FireAtCommand(column, row);
     }
 
     private int getColumn(BufferedReader stdin) throws IOException {

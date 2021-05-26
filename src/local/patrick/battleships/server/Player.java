@@ -1,9 +1,8 @@
 package local.patrick.battleships.server;
 
-import local.patrick.battleships.common.Command;
-import local.patrick.battleships.common.InformationCommand;
-import local.patrick.battleships.common.PlayingField;
-import local.patrick.battleships.common.QuitGameCommand;
+import local.patrick.battleships.common.commands.Command;
+import local.patrick.battleships.common.commands.InformationCommand;
+import local.patrick.battleships.common.commands.QuitGameCommand;
 
 import java.io.BufferedReader;
 import java.io.IOException;

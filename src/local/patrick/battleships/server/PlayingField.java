@@ -1,4 +1,9 @@
-package local.patrick.battleships.common;
+package local.patrick.battleships.server;
+
+import local.patrick.battleships.common.Constants;
+import local.patrick.battleships.common.TooManyShipsException;
+import local.patrick.battleships.common.commands.FireAtCommand;
+import local.patrick.battleships.common.commands.PlaceShipCommand;
 
 import java.util.HashMap;
 
@@ -55,10 +60,10 @@ public class PlayingField {
     /**
      * Fires a shot at the spot in command and returns the new state of the spot
      * @param command
-     * @return
+     * @return Feedback of shot
      * @throws IndexOutOfBoundsException
      */
-    public Spot fireOnSpot(PlaceBombCommand command) throws Exception {
+    public Spot fireOnSpot(FireAtCommand command) throws IndexOutOfBoundsException {
         if(!isSpotInField(command.column, command.row))
             throw new IndexOutOfBoundsException("This spot is not in the playing field");
 
@@ -78,11 +83,15 @@ public class PlayingField {
                 return Spot.HIT;
             }
         }
-        throw new Exception("This section shouldn't be reachable");
+        throw new UnknownError("This section shouldn't be reachable");
     }
 
     public Boolean isComplete() {
         return shipcount.values().stream().mapToInt(i -> i).sum() == MAX_BATTLESHIPS + MAX_CARRIERS + MAX_DESTROYERS + MAX_SUBMARINES;
+    }
+
+    public Boolean hasLost(){
+        return field.values().stream().noneMatch(row -> row.containsValue(Spot.SHIP));
     }
 
     private boolean isCommandInField(PlaceShipCommand command) {
