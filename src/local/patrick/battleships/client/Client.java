@@ -10,7 +10,7 @@ import java.net.Socket;
 
 import static local.patrick.battleships.common.Constants.*;
 
-public class Client {
+public class Client implements AutoCloseable{
     private final String targetAddress;
     private final int targetPort;
     private Socket socket;
@@ -133,5 +133,11 @@ public class Client {
         }
         System.out.println("Client listen exiting nominally");
         System.out.println("Enter q to quit");
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (!socket.isClosed())
+            socket.close();
     }
 }

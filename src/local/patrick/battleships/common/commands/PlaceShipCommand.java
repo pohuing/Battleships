@@ -4,6 +4,9 @@ import java.util.Locale;
 
 import static local.patrick.battleships.common.Constants.*;
 
+/**
+ * A command to ask the server to place a ship at a location and orientation
+ */
 public class PlaceShipCommand extends Command {
     public final static String PREFIX = "PLACE_SHIP";
     public final Integer column, row;

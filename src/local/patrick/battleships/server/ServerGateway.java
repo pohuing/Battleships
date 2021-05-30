@@ -3,6 +3,10 @@ package local.patrick.battleships.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+/**
+ * A ServerGateway listens for new connections and creates and starts Games once enough Players for a Game have been
+ * found
+ */
 public class ServerGateway implements AutoCloseable {
     private final ServerSocket serverSocket;
 
@@ -11,6 +15,9 @@ public class ServerGateway implements AutoCloseable {
         System.out.println("Starting ServerGateway on port " + port);
     }
 
+    /**
+     * Just runs forever filling games and starting them
+     */
     public void run() throws IOException {
         //noinspection InfiniteLoopStatement
         while (true) {

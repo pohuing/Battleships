@@ -26,7 +26,10 @@ public class Game implements Runnable {
         thread = new Thread(this);
     }
 
-    // Runs through player messages sequentially
+    /**
+     * Processes commands received by the Players and sends out responses
+     * Also contains the game logic
+     */
     void processMessages() throws InterruptedException {
         // process playerMessages forever till game finished
         while (true) {
@@ -40,6 +43,9 @@ public class Game implements Runnable {
                 case Two -> playerOne;
             };
 
+            // This could be refactored to move command implementation to the subclasses but would expose Game logic to
+            // shared classes and might open Game up to race conditions because sensitive resources would have to be
+            // shared outside of Game
             if (command.command instanceof GetFieldCommand) {
                 player.outgoingQueue.add(new InformationCommand(player.playingField.toAllyString()));
                 player.outgoingQueue.add(new InformationCommand(opponent.playingField.toOpponentString()));
@@ -48,58 +54,73 @@ public class Game implements Runnable {
                 playerTwo.outgoingQueue.add(command.command);
                 break;
             } else if (command.command instanceof PlaceShipCommand) {
-                if (gamePhase != GamePhase.PREPARATION) {
-                    player.outgoingQueue.add(new InformationCommand("This can only be done during the preparation phase"));
-                    continue;
-                }
-                try {
-                    player.playingField.placeShip((PlaceShipCommand) command.command);
-                } catch (IllegalStateException | IndexOutOfBoundsException | TooManyShipsException e) {
-                    player.outgoingQueue.add(new InformationCommand(e.getMessage()));
-                }
-                player.outgoingQueue.add(new InformationCommand(player.playingField.toAllyString()));
-
-                if (player.playingField.isComplete() && opponent.playingField.isComplete()) {
-                    System.out.println("Game has switched to Battle phase");
-                    gamePhase = GamePhase.BATTLE;
-                    activePlayer = opponent;
-                    player.outgoingQueue.add(new InformationCommand("Both players have finished preparation, battle begins!"));
-                    opponent.outgoingQueue.add(new InformationCommand("Both players have finished preparation, battle begins!"));
-                    player.outgoingQueue.add(new InformationCommand("It is the opponent's turn to shoot"));
-                    opponent.outgoingQueue.add(new InformationCommand("It is your turn to shoot"));
-                }
+                processPlaceShipCommand(command, player, opponent);
             } else if (command.command instanceof FireAtCommand) {
-                // Discord invalid input
-                if (gamePhase != GamePhase.BATTLE) {
-                    player.outgoingQueue.add(new InformationCommand("This can only be done during the battle phase"));
-                    continue;
-                }
-
-                if (activePlayer.tag == command.player) {
-                    try {
-                        var result = opponent.playingField.fireOnSpot((FireAtCommand) command.command);
-                        player.outgoingQueue.add(new InformationCommand(result.toString()));
-                        player.outgoingQueue.add(new InformationCommand(opponent.playingField.toOpponentString()));
-                        opponent.outgoingQueue.add(new InformationCommand(result.toString()));
-                        opponent.outgoingQueue.add(new InformationCommand(opponent.playingField.toAllyString()));
-
-                        // Did this sink the final ship?
-                        // Transition into post battle phase
-                        if (opponent.playingField.hasLost()) {
-                            gamePhase = GamePhase.FINISHED;
-                            player.outgoingQueue.add(new InformationCommand("You have hit the final ship, you've won!"));
-                            opponent.outgoingQueue.add(new InformationCommand("Your final ship has been sunk, you've lost!"));
-                        }
-                        activePlayer = opponent;
-                    } catch (IndexOutOfBoundsException e) {
-                        player.outgoingQueue.add(new InformationCommand(e.getMessage()));
-                    } catch (UnknownError e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    player.outgoingQueue.add(new InformationCommand("It is not your turn to fire"));
-                }
+                processFireAtCommand(command, player, opponent);
             }
+        }
+    }
+
+    /**
+     * Tries to fire at the opponent's fields sends feedback to players
+     */
+    private void processFireAtCommand(PlayerCommand command, Player player, Player opponent) {
+        // Discard out of phase commands
+        if (gamePhase != GamePhase.BATTLE) {
+            player.outgoingQueue.add(new InformationCommand("This can only be done during the battle phase"));
+            return;
+        }
+
+        if (activePlayer.tag == command.player) {
+            try {
+                var result = opponent.playingField.fireOnSpot((FireAtCommand) command.command);
+                // Inform players of the result
+                player.outgoingQueue.add(new InformationCommand(result.toString()));
+                player.outgoingQueue.add(new InformationCommand(opponent.playingField.toOpponentString()));
+                opponent.outgoingQueue.add(new InformationCommand(result.toString()));
+                opponent.outgoingQueue.add(new InformationCommand(opponent.playingField.toAllyString()));
+
+                // Did this sink the final ship?
+                // Transition into post battle phase
+                if (opponent.playingField.hasLost()) {
+                    gamePhase = GamePhase.FINISHED;
+                    player.outgoingQueue.add(new InformationCommand("You have hit the final ship, you've won!"));
+                    opponent.outgoingQueue.add(new InformationCommand("Your final ship has been sunk, you've lost!"));
+                }
+                activePlayer = opponent;
+            } catch (IndexOutOfBoundsException e) {
+                player.outgoingQueue.add(new InformationCommand(e.getMessage()));
+            } catch (UnknownError e) {
+                e.printStackTrace();
+            }
+        } else {
+            player.outgoingQueue.add(new InformationCommand("It is not your turn to fire"));
+        }
+    }
+
+    /**
+     * Tries to place a ship and informs players of the result
+     */
+    private void processPlaceShipCommand(PlayerCommand command, Player player, Player opponent) {
+        if (gamePhase != GamePhase.PREPARATION) {
+            player.outgoingQueue.add(new InformationCommand("This can only be done during the preparation phase"));
+            return;
+        }
+        try {
+            player.playingField.placeShip((PlaceShipCommand) command.command);
+        } catch (IllegalStateException | IndexOutOfBoundsException | TooManyShipsException e) {
+            player.outgoingQueue.add(new InformationCommand(e.getMessage()));
+        }
+        player.outgoingQueue.add(new InformationCommand(player.playingField.toAllyString()));
+
+        if (player.playingField.isComplete() && opponent.playingField.isComplete()) {
+            System.out.println("Game has switched to Battle phase");
+            gamePhase = GamePhase.BATTLE;
+            activePlayer = opponent;
+            player.outgoingQueue.add(new InformationCommand("Both players have finished preparation, battle begins!"));
+            opponent.outgoingQueue.add(new InformationCommand("Both players have finished preparation, battle begins!"));
+            player.outgoingQueue.add(new InformationCommand("It is the opponent's turn to shoot"));
+            opponent.outgoingQueue.add(new InformationCommand("It is your turn to shoot"));
         }
     }
 

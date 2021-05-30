@@ -2,10 +2,13 @@ package local.patrick.battleships.client;
 
 import local.patrick.battleships.common.Constants;
 
-import java.io.IOException;
-
 public class ClientMain {
-    public static void main(String[] args) throws IOException {
+    /**
+     * Parses command line parameters and then launches the client
+     * @param args array with either 0, 1 or 2+ arguments, with args[0] being address and [1] port
+     */
+    public static void main(String[] args) {
+        // Command line parameter parsing
         var addr = "localhost";
         var port  = Constants.DEFAULT_PORT;
         if (args.length == 1){
@@ -19,7 +22,11 @@ public class ClientMain {
                 return;
             }
         }
-        var client = new Client(addr, port);
-        client.run();
+
+        try(var client = new Client(addr, port)){
+            client.run();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

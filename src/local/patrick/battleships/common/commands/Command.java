@@ -4,14 +4,23 @@ package local.patrick.battleships.common.commands;
 import java.util.Arrays;
 
 /**
- *
+ * Parent class to define command based communications
  */
 public abstract class Command {
     //public final static String SEPARATOR = "ヾ\\(｡>﹏<｡\\)ﾉﾞ✧*";
     public final static String SEPARATOR = ";";
 
+    /**
+     * Tries to deserialize a String into a Command subclass
+     * @param line The line to be deserialized
+     * @return An instance of Command
+     * @throws InstantiationException If line could not be parsed into a known subclass of Command
+     */
     public static Command deserialize(String line) throws InstantiationException {
         var params = line.split(SEPARATOR);
+        // The first Word decides what kind of Command line is
+        // Then parameter count will be checked
+        // Then the conversion is tried
         switch (params[0]) {
             case FireAtCommand.PREFIX:
                 if (params.length == 3) {
@@ -43,6 +52,10 @@ public abstract class Command {
         }
     }
 
+    /**
+     * Turns command into a String ready for sending across a socket
+     * @return Textual representation of a Command
+     */
     public abstract String serialize();
 }
 
