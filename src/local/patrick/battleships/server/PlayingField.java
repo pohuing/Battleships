@@ -182,6 +182,7 @@ public class PlayingField {
         for (int row = 0; row < Constants.MAX_ROWS; row++) {
             temp.append("\n");
             temp.append(intToRow(row));
+            temp.append(" ");
             for (int column = 0; column < Constants.MAX_COLUMNS; column++) {
                 switch (field.get(column).get(row)) {
                     case EMPTY -> temp.append("   ");
@@ -215,6 +216,7 @@ public class PlayingField {
         for (int row = 0; row < Constants.MAX_ROWS; row++) {
             stringBuilder.append("\n");
             stringBuilder.append(intToRow(row));
+            stringBuilder.append(" ");
             for (int column = 0; column < Constants.MAX_COLUMNS; column++) {
                 switch (field.get(column).get(row)) {
                     case EMPTY, SHIP -> stringBuilder.append("   ");
