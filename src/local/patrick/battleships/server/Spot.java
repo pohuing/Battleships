@@ -4,5 +4,6 @@ public enum Spot {
     EMPTY,
     SHIP,
     MISS,
-    HIT
+    HIT,
+    SUNK
 }

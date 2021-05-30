@@ -75,10 +75,11 @@ public class Game implements Runnable {
             try {
                 var result = opponent.playingField.fireOnSpot((FireAtCommand) command.command);
                 // Inform players of the result
-                player.outgoingQueue.add(new InformationCommand(result.toString()));
-                player.outgoingQueue.add(new InformationCommand(opponent.playingField.toOpponentString()));
-                opponent.outgoingQueue.add(new InformationCommand(result.toString()));
-                opponent.outgoingQueue.add(new InformationCommand(opponent.playingField.toAllyString()));
+                player.outgoingQueue.add(new InformationCommand(
+                        result + "\nOpponent's field:\n" + opponent.playingField.toOpponentString()));
+
+                opponent.outgoingQueue.add(new InformationCommand(
+                        result + "\nYour field:\n" + opponent.playingField.toAllyString()));
 
                 // Did this sink the final ship?
                 // Transition into post battle phase
