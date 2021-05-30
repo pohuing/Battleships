@@ -11,6 +11,7 @@ public class PlaceShipCommand extends Command {
     public final static String PREFIX = "PLACE_SHIP";
     public final Integer column, row;
     public final Orientation orientation;
+    /** What kind of ship is it */
     public final Type type;
 
     public PlaceShipCommand(Integer column, Integer row, Orientation orientation, Type type) {

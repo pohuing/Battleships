@@ -1,0 +1,69 @@
+@startuml
+package server{
+    class ServerGateway
+    ServerGateway *-- Game : creates and starts
+
+    class Game{
+        -PlayerMessages: LinkedBlockingQueue<PlayerCommand>
+        -playerOne: Player
+        -playerTwo: Player
+    }
+    Game *-- Player : creates and starts
+
+
+    class Player{
+        +playingField: HashMap
+        -sendingThread: Thread
+        -receivingThread: Thread
+        +outgoingQueue: LinkedBlockingQueue<Command>
+        -feedbackChannel: LinkedBlockingQueue<PlayerCommand>
+    }
+}
+
+package common{
+    class Constants
+
+    abstract class Command
+        Command : Command deserialize(String line)
+        Command : String serialize()
+        note right of Command::deserialize
+            Crates subclasses
+        end note
+
+    class FireAtCommand{
+        +row: int
+        +column: int
+    }
+    Command <|-- FireAtCommand
+
+    class GetFieldCommand
+    Command <|-- GetFieldCommand
+
+    class InformationCommand
+        InformationCommand : +message: String
+    Command <|-- InformationCommand
+
+    class PlaceShipCommand{
+        +row: int
+        +column: int
+        +type: Type
+        +orientation: Orientation
+    }
+    Command <|-- PlaceShipCommand
+
+    class QuitGameCommand
+    Command <|-- QuitGameCommand
+}
+
+package client{
+    class Client{
+        - socket: Socket
+        -listenThread: Thread
+
+        +void start()
+        -void listen()
+    }
+}
+
+@enduml
+

@@ -1,8 +1,8 @@
 #Battleships
 ## How to build
-This applications contains two main mehods, ClientMain and ServerMain in the Client/Server packages.
+These applications contain two main methods, ClientMain and ServerMain in the Client/Server packages.
 
-In IntelliJ go to file -> project structure -> artifacts and add each Main in it's own artifact with the META-INF from the same folder
+In IntelliJ go to file -> project structure -> artifacts and add each Main in its own artifact with the META-INF from the same folder
 
 ## How to run
 Server jar runs by default on port 5555.\
@@ -24,10 +24,12 @@ Commands from the clients are fed back into a Queue of commands the main Game th
 Similarly, the sending threads only process a Queue of commands and prints the serialized version into the socket.
 
 ### Client
-The Client consists of two threads, the UI thread which processes user input and sends commands to the server. And the listening thread which prints out deserialized Commands received from the Server.\
+The Client consists of two threads, the UI thread which processes user input and sends commands to the server, and the listening thread which prints out deserialized Commands received from the Server.\
 The Client has no knowledge of game state, it is purely a front-end for creating and receiving Commands.
 
 ### Commands
 Commands are the shared classes used for serializing and deserializing communication between Server and Client. Command has a static factory method for creating appropriate subclasses with their parameters. Any data that can't be serialized into a Command causes an exception.\
 The commands are commands such as placing a ship, firing at an opponent or quitting the game.
 All communication has to happen through objects of the classes `common.commands`
+
+![ClassDiagram](ClassDiagram.png)
