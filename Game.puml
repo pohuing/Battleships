@@ -13,11 +13,17 @@ package server{
 
     class Player{
         +playingField: HashMap
+        +outgoingQueue: LinkedBlockingQueue<Command>
         -sendingThread: Thread
         -receivingThread: Thread
-        +outgoingQueue: LinkedBlockingQueue<Command>
         -feedbackChannel: LinkedBlockingQueue<PlayerCommand>
     }
+
+    class PlayingField{
+        -ships: HashSet<Ship>
+        -misses: HashSet<Miss>
+    }
+    Player *-- PlayingField
 }
 
 package common{

@@ -1,4 +1,4 @@
-#Battleships
+# Battleships
 ## How to build
 These applications contain two main methods, ClientMain and ServerMain in the Client/Server packages.
 
@@ -29,6 +29,13 @@ The Server listens until two players have connected and then transfers their soc
 The Game manages the game logic and communication with two players with a sending, and a receiving thread for each player.\
 Commands from the clients are fed back into a Queue of commands the main Game thread processes.\
 Similarly, the sending threads only process a Queue of commands and prints the serialized version into the socket.
+
+### Player
+A Player manages the connection to the Client and holds associated resources such as the PlayingField and the Socket.
+
+### PlayingField
+A PlayingField is concerned with storing the current state of a player's Field, keeping track of the player's ships, their health and missed shots on this field.\
+It also has methods for all associated functions such as placing a ship, shooting in its area and pretty printing itself. 
 
 ### Client
 The Client consists of two threads, the UI thread which processes user input and sends commands to the server, and the listening thread which prints out deserialized Commands received from the Server.\

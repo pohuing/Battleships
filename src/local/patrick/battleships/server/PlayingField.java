@@ -18,7 +18,7 @@ public class PlayingField {
      * .get(column).get(row)
      */
     private final HashSet<Ship> ships = new HashSet<>();
-    private final List<Miss> misses = new ArrayList<>();
+    private final HashSet<Miss> misses = new HashSet<>();
     /**
      * Tracks the amount of ships currently placed during the Preparation phase
      */
