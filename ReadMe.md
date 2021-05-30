@@ -5,13 +5,20 @@ These applications contain two main methods, ClientMain and ServerMain in the Cl
 In IntelliJ go to file -> project structure -> artifacts and add each Main in its own artifact with the META-INF from the same folder
 
 ## How to run
-Server jar runs by default on port 5555.\
-Clients by default connect to localhost:5555, custom ports/remote addresses can be connected to like such `Client.jar <customHost> <customPort>`
+Server jar runs by default on port 5555. Port can be changed via the first parameter`java -jar Server.jar <customPort>`\
+Clients by default connect to localhost:5555, custom ports/remote addresses can be connected to like such `java -jar Client.jar <customHost> <customPort>` or `java -jar Client.jar <customHost>`
 
-Once the server has been contacted by two clients it starts a new game session, Clients will get a Hello World message and can then begin placing their ships.\
-Enter ? to get a view of your, and the opponent's boards.\
+Once the server has been contacted by two clients it starts a new game session, Clients will get a Hello World message and can then begin placing their ships.
+
+Enter ? to get a view of your, and the opponent's boards.
+
 Place ships by entering the initial letter of the ship, press enter and follow the prompts.\
-Firing at the opponent will only work once both players have finished placing all their ships, a message will be shown. Fire at the opponent by entering F and following the prompts. If it's your turn to fire you'll get a printout of the opponents board, and a MISS/HIT message.\
+    Ships available are Carrier(4 long) Battleship(3 long) Destroyer(2 long) Submarine(1 long)
+
+Firing at the opponent will only work once both players have finished placing all their ships, a message will be shown. 
+
+Fire at the opponent by entering F and following the prompts. If it was your turn to fire you'll get a printout of the opponents board, and a MISS/HIT message.
+
 If either side's ships have all been destroyed the game functionally ends. Both players can still get a current state of the boards but no other actions will have effect.
 
 ## Architecture
